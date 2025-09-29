@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title>LogIn</title>
+    <script type="module" src="app.js"></script>
+  </head>
+<body>
+    <div id="app">
+      <button v-if="!showRegister && !hasToken" @click="showRegister = true">
+    Registrar usuario
+  </button>
+        <login v-if="!hasToken && !showRegister" @logged-in="handleLogin"></login>
+        <requisicion v-if="hasToken" :user="currentUser" @logout="handleLogout"></requisicion>
+        <registro v-if="showRegister" @registered="handleRegistered"></registro>
+        <tabler v-if="hasToken" ></tabler>
+    </div>
+
+
+
+    <!--Templates-->
+    <template id="reqTable">
+      <div>
+      <h2>Requisiciones Activas</h2>
+      <table border="1" cellpadding="8">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Problema</th>
+            <th>Requisitor</th>
+            <th>Media</th>
+            <th>Descripción</th>
+            <th>Ubicación</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="req in requisiciones" :key="req.id">
+            <td>{{ req.id }}</td>
+            <td>{{ req.problema }}</td>
+            <td>{{ req.requisitor }}</td>
+            <td>{{ req.media }}</td>
+            <td>{{ req.descripcion }}</td>
+            <td>{{ req.ubicacion }}</td>
+            <td>
+              <button @click="cerrarReq(req.id)">Cerrar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    </template> 
+
+
+    <template id="login">
+       <h2>Iniciar sesion </h2>
+  <form @submit.prevent="envForm">
+    <input v-model="email" placeholder="Correo"><br>
+    <input type="password" v-model="password" placeholder="Contraseña"><br>
+  
+    <button type="submit">Enviar</button><br>
+    
+  </form>
+ 
+    </template>
+    <template id="req">
+       <h2>Registrar Requisición</h2>
+       <button @click="logout">cerrar sesion</button>
+  <form @submit.prevent="submitForm">
+    <input v-model="problema" placeholder="Problema"><br>
+    <input v-model="media" placeholder="Media"><br>
+    <textarea v-model="descripcion" placeholder="Descripción"></textarea><br>
+    <input v-model="ubicacion" placeholder="Ubicación"><br>
+    <button type="submit">Enviar</button>
+  </form>
+    </template>
+
+    <template id="reg">
+      <h2>Registro</h2>
+       
+  <form @submit.prevent="envForm">
+    <input v-model="email" placeholder="Correo"><br>
+    <input v-model="name" placeholder="Usuario"><br>
+    <input type="password" v-model="password" placeholder="Contraseña"><br>
+    <input type="password" v-model="password_confirmation" placeholder="Contraseña"><br>
+    <button type="submit">Enviar</button>
+  </form>
+    </template>
+    
+</body>
+</html>
