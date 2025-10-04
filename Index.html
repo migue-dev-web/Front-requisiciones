@@ -9,7 +9,7 @@
   </head>
 <body>
     <div id="app">
-      <button v-if="!showRegister && !hasToken" @click="showRegister = true">
+      <button class="btn btn-success m-3" v-if="!showRegister && !hasToken" @click="showRegister = true">
     Registrar usuario
   </button>
         <login v-if="!hasToken && !showRegister" @logged-in="handleLogin"></login>
@@ -18,14 +18,13 @@
         <tabler v-if="hasToken" ></tabler>
     </div>
 
-
-
     <!--Templates-->
-    <template id="reqTable">
-      <div>
-      <h2>Requisiciones Activas</h2>
-      <table border="1" cellpadding="8">
-        <thead>
+<template id="reqTable">
+  <div class="container mt-4">
+    <h2 class="mb-3 text-center">Requisiciones Activas</h2>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
           <tr>
             <th>ID</th>
             <th>Problema</th>
@@ -45,49 +44,81 @@
             <td>{{ req.descripcion }}</td>
             <td>{{ req.ubicacion }}</td>
             <td>
-              <button @click="cerrarReq(req.id)">Cerrar</button>
+              <button @click="cerrarReq(req.id)" class="btn btn-danger btn-sm">Cerrar</button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-    </template> 
+  </div>
+</template>
 
+<template id="login">
+  <div class="container mt-5 col-md-4">
+    <div class="card shadow p-4">
+      <h2 class="text-center mb-3">Iniciar sesión</h2>
+      <form @submit.prevent="envForm">
+        <div class="mb-3">
+          <input v-model="email" type="email" class="form-control" placeholder="Correo">
+        </div>
+        <div class="mb-3">
+          <input type="password" v-model="password" class="form-control" placeholder="Contraseña">
+        </div>
+        <button type="submit" class="btn btn-outline-primary w-100">Enviar</button>
+      </form>
+    </div>
+  </div>
+</template>
 
-    <template id="login">
-       <h2>Iniciar sesion </h2>
-  <form @submit.prevent="envForm">
-    <input v-model="email" placeholder="Correo"><br>
-    <input type="password" v-model="password" placeholder="Contraseña"><br>
-  
-    <button type="submit">Enviar</button><br>
-    
-  </form>
- 
-    </template>
-    <template id="req">
-       <h2>Registrar Requisición</h2>
-       <button @click="logout">cerrar sesion</button>
-  <form @submit.prevent="submitForm">
-    <input v-model="problema" placeholder="Problema"><br>
-    <input v-model="media" placeholder="Media"><br>
-    <textarea v-model="descripcion" placeholder="Descripción"></textarea><br>
-    <input v-model="ubicacion" placeholder="Ubicación"><br>
-    <button type="submit">Enviar</button>
-  </form>
-    </template>
+<template id="req">
+  <div class="container mt-5 col-md-6">
+    <div class="card shadow p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Registrar Requisición</h2>
+        <button @click="logout" class="btn btn-outline-secondary btn-sm">Cerrar sesión</button>
+      </div>
+      <form @submit.prevent="submitForm">
+        <div class="mb-3">
+          <input v-model="problema" class="form-control" placeholder="Problema">
+        </div>
+        <div class="mb-3">
+          <input v-model="media" class="form-control" placeholder="Media">
+        </div>
+        <div class="mb-3">
+          <textarea v-model="descripcion" class="form-control" placeholder="Descripción"></textarea>
+        </div>
+        <div class="mb-3">
+          <input v-model="ubicacion" class="form-control" placeholder="Ubicación">
+        </div>
+        <button type="submit" class="btn btn-outline-success w-100">Enviar</button>
+      </form>
+    </div>
+  </div>
+</template>
 
-    <template id="reg">
-      <h2>Registro</h2>
-       
-  <form @submit.prevent="envForm">
-    <input v-model="email" placeholder="Correo"><br>
-    <input v-model="name" placeholder="Usuario"><br>
-    <input type="password" v-model="password" placeholder="Contraseña"><br>
-    <input type="password" v-model="password_confirmation" placeholder="Contraseña"><br>
-    <button type="submit">Enviar</button>
-  </form>
-    </template>
+<template id="reg">
+  <div class="container mt-5 col-md-5">
+    <div class="card shadow p-4">
+      <h2 class="text-center mb-3">Registro</h2>
+      <form @submit.prevent="envForm">
+        <div class="mb-3">
+          <input v-model="email" type="email" class="form-control" placeholder="Correo">
+        </div>
+        <div class="mb-3">
+          <input v-model="name" class="form-control" placeholder="Usuario">
+        </div>
+        <div class="mb-3">
+          <input type="password" v-model="password" class="form-control" placeholder="Contraseña">
+        </div>
+        <div class="mb-3">
+          <input type="password" v-model="password_confirmation" class="form-control" placeholder="Confirmar contraseña">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Enviar</button>
+      </form>
+    </div>
+  </div>
+</template>
+
     
 </body>
 </html>
