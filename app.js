@@ -1,5 +1,6 @@
 import {createApp} from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-const api ="https://administracion-de-requisiciones-it.onrender.com";
+//const api ="https://administracion-de-requisiciones-it.onrender.com";
+const api = "http://127.0.0.1:8000";
       const requisicion = {
         template: "#req",
         props: ["user"], 
@@ -29,6 +30,7 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
         const response = await fetch(`${api}/api/req`, {
           method: "POST",
           headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem("token"),
             "Content-Type": "application/json",
             "Accept": "application/json"
           },
@@ -38,7 +40,7 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
 
         const data = await response.json();
         console.log("Requisición enviada:", data);
-
+        location.reload();
 
       }catch(error){
          console.error(error);
@@ -49,6 +51,7 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         this.$emit("logout");
+        location.reload();
     }
   }
     };
@@ -176,6 +179,7 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
                 try{
                     const resp = await fetch(`${api}/api/req/activas`,{
                         headers:{
+                            'Authorization': 'Bearer ' + localStorage.getItem("token"),
                             "Accept": "application/json"
                         }
                     });
@@ -195,6 +199,7 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
                     const resp = await fetch(`${api}/api/req/${id}/finalizar`,{
                         method: "PUT", // o POST según tu API
                         headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem("token"),
                             "Content-Type": "application/json",
                             "Accept": "application/json",
                         },
