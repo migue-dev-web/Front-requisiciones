@@ -1,5 +1,6 @@
 import {createApp} from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
 const api ="https://administracion-de-requisiciones-it.onrender.com";
+//const api = 'http://127.0.0.1:8000';
       const requisicion = {
         template: "#req",
         props: ["user"], 
@@ -88,7 +89,7 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
             });
 
             if (!resp.ok) {
-                throw new Error(`Error en la petición: ${response.status}`);
+                throw new Error(`Error en la petición: ${resp.status}`);
             }
 
             const data = await resp.json();
@@ -110,6 +111,37 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
             }
         }
 
+    }
+
+    const Historial = {
+        template: '#reqHist',
+        data(){
+            return{
+                requisiciones:[],
+                currentUser: JSON.parse(localStorage.getItem("user")) || null
+            }
+        },
+        mounted(){
+            this.fetchReq();
+        },
+        methods: {
+            async fetchReq(){
+                try{
+                    const resp = await fetch(`${api}/api/req/historial`,{
+                        headers:{
+                            'Authorization': 'Bearer ' + localStorage.getItem("token"),
+                            "Accept": "application/json"
+                        }
+                    });
+                    if(!resp.ok) throw new Error ('Error al cargar las requisiciones');
+
+                    this.requisiciones = await resp.json();
+                }catch (err){
+                    console.error(err);
+                    alert("Error al cargar las requisiciones");
+                }
+            }
+        }
     }
 
     const reg ={
@@ -150,7 +182,7 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
                     });
 
                     if (!resp.ok) {
-                        throw new Error(`Error en la petición: ${response.status}`);
+                        throw new Error(`Error en la petición: ${resp.status}`);
                     }
                     this.$emit("registered");
 
@@ -224,21 +256,27 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
     }
 
     createApp({
-        components: { 'requisicion': requisicion, 'login':login, 'registro':reg, 'tabler':reqlist },
+        components: { 'requisicion': requisicion, 'login':login, 'registro':reg, 'tabler':reqlist, 'historial':Historial },
         data(){
             return{
                 hasToken: !!localStorage.getItem("token"),
                 showRegister: false,
                 currentUser: null,
+                mostrarHistorial: false,
+                rol: 'tecnico',
             };
         },
         methods:{
             handleLogin(user){
                 this.currentUser = user;
                 this.hasToken = true;
+                this.rol = user.rol;
             },
             handleLogout() {
-      this.hasToken = false; 
+      this.hasToken = false;
+       this.mostrarHistorial = false;
+       this.currentUser = null; 
+       
     },
      handleRegistered() {
       this.showRegister = false;

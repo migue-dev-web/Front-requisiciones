@@ -9,13 +9,17 @@
   </head>
 <body>
     <div id="app">
+       
       <button class="btn btn-success m-3" v-if="!showRegister && !hasToken" @click="showRegister = true">
     Registrar usuario
   </button>
+  <button v-if="hasToken" class="btn btn-secondary m-3"@click="mostrarHistorial = !mostrarHistorial">Historial</button>
+  
         <login v-if="!hasToken && !showRegister" @logged-in="handleLogin"></login>
-        <requisicion v-if="hasToken" :user="currentUser" @logout="handleLogout"></requisicion>
-        <registro v-if="showRegister" @registered="handleRegistered"></registro>
-        <tabler v-if="hasToken" ></tabler>
+        <requisicion v-if="hasToken && !mostrarHistorial" :user="currentUser" @logout="handleLogout"></requisicion>
+        <registro v-if="showRegister " @registered="handleRegistered"></registro>
+        <tabler v-if="hasToken && !mostrarHistorial" ></tabler>
+        <historial v-if="hasToken && mostrarHistorial"></historial>
     </div>
 
     <!--Templates-->
@@ -23,6 +27,7 @@
   <div class="container mt-4">
     <h2 class="mb-3 text-center">Requisiciones Activas</h2>
     <div class="table-responsive">
+     
       <table class="table table-striped table-hover align-middle">
         <thead class="table-dark">
           <tr>
@@ -46,6 +51,42 @@
             <td>
               <button @click="cerrarReq(req.id)" class="btn btn-danger btn-sm">Cerrar</button>
             </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<template id="reqHist">
+  <div class="container mt-4">
+    <h2 class="mb-3 text-center">Historial de Requisiciones</h2>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Problema</th>
+            <th>Requisitor</th>
+            <th>Media</th>
+            <th>Descripción</th>
+            <th>Ubicación</th>
+            <th>Atendio</th>
+            <th>Finalizada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="req in requisiciones" :key="req.id">
+            <td>{{ req.id }}</td>
+            <td>{{ req.problema }}</td>
+            <td>{{ req.requisitor }}</td>
+            <td>{{ req.media }}</td>
+            <td>{{ req.descripcion }}</td>
+            <td>{{ req.ubicacion }}</td>
+            <td>
+              {{req.tecnico}}
+            </td>
+            <td>{{ req.fecha_finalizacion ? new Date(req.fecha_finalizacion).toLocaleString() : 'N/A' }}</td>
           </tr>
         </tbody>
       </table>
