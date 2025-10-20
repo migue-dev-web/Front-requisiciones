@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <title>LogIn</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="app.js"></script>
   </head>
 <body>
     <div id="app">
-       
+       <notificaciones v-if="hasToken"></notificaciones>
       <button class="btn btn-success m-3" v-if="!showRegister && !hasToken" @click="showRegister = true">
     Registrar usuario
   </button>
@@ -20,6 +21,7 @@
         <registro v-if="showRegister " @registered="handleRegistered"></registro>
         <tabler v-if="hasToken && !mostrarHistorial" ></tabler>
         <historial v-if="hasToken && mostrarHistorial"></historial>
+        <estadisticas v-if="hasToken && mostrarHistorial "></estadisticas>
     </div>
 
     <!--Templates-->
@@ -37,17 +39,23 @@
             <th>Media</th>
             <th>Descripción</th>
             <th>Ubicación</th>
+            <th>Prioridad</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="req in requisiciones" :key="req.id">
+          <tr v-for="req in requisiciones" :key="req.id" :class="getPrioridadClase(req.prioridad)">
             <td>{{ req.id }}</td>
             <td>{{ req.problema }}</td>
             <td>{{ req.requisitor }}</td>
             <td>{{ req.media }}</td>
             <td>{{ req.descripcion }}</td>
             <td>{{ req.ubicacion }}</td>
+            <td>
+              <span class="fw-bold">
+                {{ prioridadTexto(req.prioridad) }}
+              </span>
+            </td>
             <td>
               <button @click="cerrarReq(req.id)" class="btn btn-danger btn-sm">Cerrar</button>
             </td>
@@ -130,6 +138,19 @@
         </div>
         <div class="mb-3">
           <input v-model="ubicacion" class="form-control" placeholder="Ubicación">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Prioridad:</label>
+          <select v-model="prioridad" class="form-select">
+            <option value="1">Alta</option>
+            <option value="2">Media</option>
+            <option value="3">Baja</option>
+          </select>
+        </div>
+
+        <div v-if="prioridad == 1" class="mb-3">
+          <label class="form-label">Motivo de prioridad alta:</label>
+          <textarea v-model="razon_prioridad" class="form-control"></textarea>
         </div>
         <button type="submit" class="btn btn-outline-success w-100">Enviar</button>
       </form>
