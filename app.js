@@ -1,5 +1,6 @@
 
 import {createApp} from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+
 const api ="https://administracion-de-requisiciones-it.onrender.com";
 //const api = 'http://127.0.0.1:8000';
       const requisicion = {
@@ -35,14 +36,14 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
         const response = await fetch(`${api}/api/req`, {
           method: "POST",
           headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem("token"),
+            "Authorization": 'Bearer ' + sessionStorage.getItem("token"),
             "Content-Type": "application/json",
             "Accept": "application/json"
           },
           body: JSON.stringify(payload)
         });
         if (!response.ok) throw new Error("Error al enviar requisición");
-
+        
         const data = await response.json();
         console.log("Requisición enviada:", data);
         location.reload();
@@ -53,8 +54,9 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
       }
     },
     logout(){
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+        sessionStorage.removeItem("userRole");
         this.$emit("logout");
         location.reload();
     }
@@ -101,12 +103,13 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
             console.log("Respuesta de la API:", data);
 
             if(data.token){
-                localStorage.setItem("token",data.token);
-                localStorage.setItem("user", JSON.stringify(data.user));
+                sessionStorage.setItem("token",data.token);
+                sessionStorage.setItem("user", JSON.stringify(data.user));
+                sessionStorage.setItem('userRole', data.user.role);
             }
 
             this.$emit("loggedIn", data.user);
-
+              location.reload();
         }catch(error)
         {
             console.error("Error al iniciar", error);
@@ -118,12 +121,110 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
 
     }
 
+    const adminPanel = {
+      template:'#adminPanel',
+      data(){
+        return {
+          usuarios: [],
+          requisiciones: [],
+        };
+      },
+      mounted(){
+        this.cargarUsuarios();
+        this.cargarRequisiciones();
+        
+      },
+      methods:{
+        async cargarUsuarios(){
+
+          try{
+      
+            const resp = await fetch(`${api}/api/usuarios`, { headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') }});
+            console.log(sessionStorage.getItem("token"));
+            if (!resp.ok) {
+      console.error('Error al cargar usuarios', resp.status);
+      return;
+    } 
+            this.usuarios = await resp.json();
+            this.usuarios.forEach(u => {
+              u.rolselected = u.rol;
+            });
+          }catch (err){
+                    console.error(err);
+                    console.log("Error al cargar los usuario: "+err);
+          }
+        },
+
+        async cambiarRol(user){
+          const payload = {role:user.rolselected}
+
+          try {
+            const resp = await fetch(`${api}/api/usuarios/${user.id}/rol`,{
+                method:'PUT',
+                headers:{
+                  "Authorization": 'Bearer ' + sessionStorage.getItem('token'),
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(payload),
+                
+            });
+            
+            if (!resp.ok) throw new Error("Error al actualizar rol");
+            alert(`Rol de ${user.name} actualizado`);
+          } catch (err) {
+            console.error(err);
+                    console.log("Error al actualizar rol: "+err);
+          }
+        },
+
+        async cargarRequisiciones(){
+          try {
+            const resp = await fetch(`${api}/api/req/activas`, { headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') } });
+             this.requisiciones = await resp.json();
+             this.requisiciones.forEach(u=>{
+              u.prioridades = u.prioridad
+             })
+          } catch (error) {
+            console.error(err);
+                    console.log("Error al obtener requisiciones: "+err);
+          }
+        },
+
+        async cambiarPrioridad(req){
+          const payload = {prioridad: req.prioridades}
+          try {
+
+             const resp = await fetch(`${api}/api/requis/${req.id}/prioridad`,{
+                method:'PUT',
+                headers:{
+                  "Authorization": 'Bearer ' + sessionStorage.getItem('token'),
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(payload),
+                
+            });
+            
+            if (!resp.ok) throw new Error("Error al actualizar prioridad");
+
+            alert(`Prioridad de la requisición #${req.id} actualizada`);
+          } catch (error) {
+            console.error(err);
+                    console.log("Error al actualizar requisiciones: "+err);
+          }
+        },
+        prioridadTexto(p) { if (p == 1) return "Alta"; if (p == 2) return "Media"; return "Baja"; }
+      }
+    }
+
+
     const Historial = {
         template: '#reqHist',
         data(){
             return{
                 requisiciones:[],
-                currentUser: JSON.parse(localStorage.getItem("user")) || null
+                currentUser: JSON.parse(sessionStorage.getItem("user")) || null
             }
         },
         mounted(){
@@ -134,7 +235,7 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
                 try{
                     const resp = await fetch(`${api}/api/req/historial`,{
                         headers:{
-                            'Authorization': 'Bearer ' + localStorage.getItem("token"),
+                            'Authorization': 'Bearer ' + sessionStorage.getItem("token"),
                             "Accept": "application/json"
                         }
                     });
@@ -203,8 +304,9 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
         template: '#reqTable',
         data(){
             return{
+                userRole:sessionStorage.getItem("userRole"),
                 requisiciones:[],
-                currentUser: JSON.parse(localStorage.getItem("user")) || null
+                currentUser: JSON.parse(sessionStorage.getItem("user")) || null
             }
         },
         mounted(){
@@ -215,7 +317,7 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
                 try{
                     const resp = await fetch(`${api}/api/req/activas`,{
                         headers:{
-                            'Authorization': 'Bearer ' + localStorage.getItem("token"),
+                            'Authorization': 'Bearer ' + sessionStorage.getItem("token"),
                             "Accept": "application/json"
                         }
                     });
@@ -228,14 +330,14 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
                 }
             },
             async cerrarReq(id){
-                const currentUser = JSON.parse(localStorage.getItem("user"));
+                const currentUser = JSON.parse(sessionStorage.getItem("user"));
                 if(!confirm("Cerrar requisicion?")) return;
 
                 try{
                     const resp = await fetch(`${api}/api/req/${id}/finalizar`,{
                         method: "PUT", // o POST según tu API
                         headers: {
-                            'Authorization': 'Bearer ' + localStorage.getItem("token"),
+                            'Authorization': 'Bearer ' + sessionStorage.getItem("token"),
                             "Content-Type": "application/json",
                             "Accept": "application/json",
                         },
@@ -291,7 +393,7 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
       try {
         const resp = await fetch(`${api}/api/req/historial`, {
           headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem("token"),
+            'Authorization': 'Bearer ' + sessionStorage.getItem("token"),
             'Accept': 'application/json'
           }
         });
@@ -369,7 +471,7 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
     async cargarNotis() {
       const resp = await fetch(`${api}/api/notificaciones`, {
         headers: {
-          'Authorization': 'Bearer ' + localStorage.getItem("token"),
+          'Authorization': 'Bearer ' + sessionStorage.getItem("token"),
           'Accept': 'application/json'
         }
       });
@@ -379,7 +481,7 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
       await fetch(`${api}/api/notificaciones/${id}/leida`, {
         method: 'PUT',
         headers: {
-          'Authorization': 'Bearer ' + localStorage.getItem("token"),
+          'Authorization': 'Bearer ' + sessionStorage.getItem("token"),
           'Accept': 'application/json'
         }
       });
@@ -390,16 +492,24 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
 
 
     createApp({
-        components: { 'requisicion': requisicion, 'login':login, 'registro':reg, 'tabler':reqlist, 'historial':Historial,'notificaciones': notificaciones,'estadisticas': estadisticas },
+        components: { 'admin-panel': adminPanel,'requisicion': requisicion, 'login':login, 'registro':reg, 'tabler':reqlist, 'historial':Historial,'notificaciones': notificaciones,'estadisticas': estadisticas },
         data(){
             return{
-                hasToken: !!localStorage.getItem("token"),
+                hasToken: !!sessionStorage.getItem("token"),
+                userRole:sessionStorage.getItem("userRole"),
                 showRegister: false,
                 currentUser: null,
-                mostrarHistorial: false,
+                btnHist: 'Historial',
+                shHist:false,
                 rol: 'tecnico',
             };
         },
+        computed: {
+    mostrarHistorial() {
+      return this.userRole == 1 || this.userRole == 2;
+    }
+  },
+        
         methods:{
             handleLogin(user){
                 this.currentUser = user;
@@ -408,9 +518,8 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
             },
             handleLogout() {
       this.hasToken = false;
-       this.mostrarHistorial = false;
        this.currentUser = null; 
-       
+       sessionStorage.clear();
     },
      handleRegistered() {
       this.showRegister = false;

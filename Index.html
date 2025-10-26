@@ -10,21 +10,26 @@
   </head>
 <body>
     <div id="app">
-       <notificaciones v-if="hasToken"></notificaciones>
+       <notificaciones v-if="hasToken && mostrarHistorial"></notificaciones>
       <button class="btn btn-success m-3" v-if="!showRegister && !hasToken" @click="showRegister = true">
     Registrar usuario
   </button>
-  <button v-if="hasToken" class="btn btn-secondary m-3"@click="mostrarHistorial = !mostrarHistorial">Historial</button>
+  <button v-if="mostrarHistorial && hasToken" class="btn btn-secondary m-3"@click="shHist = !shHist"><p v-if="!shHist">Historial</p><p v-if="shHist">Requisiciones</p></button>
   
         <login v-if="!hasToken && !showRegister" @logged-in="handleLogin"></login>
-        <requisicion v-if="hasToken && !mostrarHistorial" :user="currentUser" @logout="handleLogout"></requisicion>
+        <requisicion v-if="hasToken && !shHist" :user="currentUser" @logout="handleLogout"></requisicion>
         <registro v-if="showRegister " @registered="handleRegistered"></registro>
-        <tabler v-if="hasToken && !mostrarHistorial" ></tabler>
-        <historial v-if="hasToken && mostrarHistorial"></historial>
-        <estadisticas v-if="hasToken && mostrarHistorial "></estadisticas>
+        <tabler v-if="hasToken && !shHist" ></tabler>
+        <admin-panel v-if="mostrarHistorial && hasToken && !shHist"></admin-panel>
+        <historial v-if="hasToken && shHist && (userRole==1 || userRole==2)"></historial>
+        <estadisticas v-if="hasToken && shHist && (userRole==1 || userRole==2)"></estadisticas>
     </div>
+    
 
     <!--Templates-->
+
+
+
 <template id="reqTable">
   <div class="container mt-4">
     <h2 class="mb-3 text-center">Requisiciones Activas</h2>
@@ -40,7 +45,7 @@
             <th>Descripción</th>
             <th>Ubicación</th>
             <th>Prioridad</th>
-            <th>Acciones</th>
+            <th v-if="userRole==1 || userRole==2">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -56,13 +61,75 @@
                 {{ prioridadTexto(req.prioridad) }}
               </span>
             </td>
-            <td>
+            <td v-if="userRole==1 || userRole==2">
               <button @click="cerrarReq(req.id)" class="btn btn-danger btn-sm">Cerrar</button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+  </div>
+</template>
+
+<template id="adminPanel">
+  <div class="container mt-4">
+    <h2 class="mb-3">Panel de Administrador</h2>
+
+    
+    <h4>Usuarios</h4>
+    <table class="table table-responsive table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="user in usuarios" :key="user.id">
+          <td>{{ user.id }}</td>
+          <td>{{ user.name }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          <td>
+            <select v-model="user.rolselected" class="form-select form-select-sm d-inline w-auto">
+              <option value="user">Usuario</option>
+              <option value="tecnico">Técnico</option>
+              <option value="admin">Admin</option>
+            </select>
+            <button class="btn btn-sm btn-primary" @click="cambiarRol(user)">Actualizar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <h4 class="mt-5">Requisiciones</h4>
+    <table class="table table-responsive table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Problema</th>
+          <th>Prioridad</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="req in requisiciones" :key="req.id">
+          <td>{{ req.id }}</td>
+          <td>{{ req.problema }}</td>
+          <td>{{ prioridadTexto(req.prioridad) }}</td>
+          <td>
+            <select v-model="req.prioridades" class="form-select form-select-sm d-inline w-auto">
+              <option value="1">Alta</option>
+              <option value="2">Media</option>
+              <option value="3">Baja</option>
+            </select>
+            <button class="btn btn-sm btn-warning" @click="cambiarPrioridad(req)">Actualizar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -180,7 +247,5 @@
     </div>
   </div>
 </template>
-
-    
 </body>
 </html>
