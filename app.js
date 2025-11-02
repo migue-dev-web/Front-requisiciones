@@ -1,8 +1,8 @@
 
 import {createApp} from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
 
-//const api ="https://administracion-de-requisiciones-it.onrender.com";
-const api = 'http://127.0.0.1:8000';
+const api ="https://administracion-de-requisiciones-it.onrender.com";
+//const api = 'http://127.0.0.1:8000';
       const requisicion = {
         template: "#req",
         props: ["user"], 
