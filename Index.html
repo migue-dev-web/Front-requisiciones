@@ -9,6 +9,7 @@
     <script type="module" src="app.js"></script>
   </head>
 <body>
+  
     <div id="app">
        <notificaciones v-if="hasToken && mostrarHistorial"></notificaciones>
       <button class="btn btn-success m-3" v-if="!showRegister && !hasToken" @click="showRegister = true">
@@ -24,6 +25,10 @@
         <historial v-if="hasToken && shHist && (userRole==1 || userRole==2)"></historial>
         <estadisticas v-if="hasToken && shHist && (userRole==1 || userRole==2)"></estadisticas>
     </div>
+
+
+
+    <!--Modal-->
     
 
     <!--Templates-->
@@ -62,13 +67,37 @@
               </span>
             </td>
             <td v-if="userRole==1 || userRole==2">
-              <button @click="cerrarReq(req.id)" class="btn btn-danger btn-sm">Cerrar</button>
+              <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalCerrarReq" @click="equalizer(req)">
+                  Cerrar Requisición
+              </button>
+              
             </td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
+
+  <div class="modal fade" id="modalCerrarReq" tabindex="-1" aria-labelledby="modalCerrarReqLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalCerrarReqLabel">Cerrar Requisición</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <label for="solucion" class="form-label">Describe la solución:</label>
+        <textarea id="solucion" v-model="solucion" class="form-control" rows="4"
+          placeholder="Ejemplo: Se reemplazó el componente dañado..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" >Cancelar</button>
+        <button @click="cerrarReq(idrq)" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </template>
 
 <template id="adminPanel">
@@ -148,6 +177,7 @@
             <th>Ubicación</th>
             <th>Atendio</th>
             <th>Finalizada</th>
+            <th>Solucion</th>
           </tr>
         </thead>
         <tbody>
@@ -162,6 +192,7 @@
               {{req.tecnico}}
             </td>
             <td>{{ req.fecha_finalizacion ? new Date(req.fecha_finalizacion).toLocaleString() : 'N/A' }}</td>
+            <td>{{ req.solucion }}</td>
           </tr>
         </tbody>
       </table>
@@ -247,5 +278,6 @@
     </div>
   </div>
 </template>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

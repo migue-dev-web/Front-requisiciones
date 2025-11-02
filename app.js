@@ -1,8 +1,8 @@
 
 import {createApp} from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
 
-const api ="https://administracion-de-requisiciones-it.onrender.com";
-//const api = 'http://127.0.0.1:8000';
+//const api ="https://administracion-de-requisiciones-it.onrender.com";
+const api = 'http://127.0.0.1:8000';
       const requisicion = {
         template: "#req",
         props: ["user"], 
@@ -306,13 +306,19 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
             return{
                 userRole:sessionStorage.getItem("userRole"),
                 requisiciones:[],
-                currentUser: JSON.parse(sessionStorage.getItem("user")) || null
+                currentUser: JSON.parse(sessionStorage.getItem("user")) || null,
+                idrq:null,
+                solucion:""
             }
         },
         mounted(){
             this.fetchReq();
         },
         methods: {
+          equalizer(id){
+            this.idrq =id.id;
+            console.log(this.idrq)
+          },
             async fetchReq(){
                 try{
                     const resp = await fetch(`${api}/api/req/activas`,{
@@ -328,6 +334,17 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
                     console.error(err);
                     alert("Error al cargar las requisiciones");
                 }
+
+                  const modal = document.getElementById('modalCerrarReq');
+                  
+                    modal.addEventListener('show.bs.modal',e=>{
+                      const button = e.relatedTarget
+                       this.idrq = button.getAttribute('data-bs-whatever')
+                       console.log(this.idrq)
+                    })
+                  
+
+
             },
             async cerrarReq(id){
                 const currentUser = JSON.parse(sessionStorage.getItem("user"));
@@ -342,7 +359,8 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
                             "Accept": "application/json",
                         },
                         body: JSON.stringify({
-                            tecnico: currentUser.name
+                            tecnico: currentUser.name,
+                            solucion:this.solucion
                         })
                         
                     });
@@ -353,11 +371,15 @@ const api ="https://administracion-de-requisiciones-it.onrender.com";
                     console.log("Requisición cerrada:", data);
 
                      this.requisiciones = this.requisiciones.filter(r => r.id !== id);
+                      this.solucion = "";
+
+                      await this.fetchReq();
 
                 }catch(err){
                     console.error(err);
                     alert("Error al cerrar requisición");
                 }
+                
             },
                 getPrioridadClase(prioridad) {
                 if (prioridad === 1) return 'table-danger';   
